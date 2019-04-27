@@ -29,7 +29,10 @@ private:
     void delayFps();
     void setPixel(glm::vec3 color, glm::ivec2 position);
 
-    float rayMarch(glm::vec3 rayDirection);
+    float rayMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, float minDistanceToSurface = 0.1f);
+    float getDistance(glm::vec3 currentMarchingLocation);
+    float getLight(glm::vec3 surfacePosition);
+    glm::vec3 getNormal(glm::vec3 surfacePosition);
 public:
     MainLoop();
     ~MainLoop();
