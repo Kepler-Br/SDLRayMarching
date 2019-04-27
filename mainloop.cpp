@@ -54,7 +54,33 @@ void MainLoop::update()
 
 }
 
-float getDistance(glm::vec3 currentMarchingLocation)
+glm::vec3 MainLoop::getNormal(glm::vec3 surfacePosition)
+{
+    float distance = getDistance(surfacePosition);
+    glm::vec2 epsilon(0.01f, 0.0f);
+    glm::vec3 normal = glm::vec3(
+                getDistance(surfacePosition-glm::vec3(epsilon.x, epsilon.y, epsilon.y)),
+                getDistance(surfacePosition-glm::vec3(epsilon.y, epsilon.x, epsilon.y)),
+                getDistance(surfacePosition-glm::vec3(epsilon.y, epsilon.y, epsilon.x))
+                );
+    return glm::normalize(normal);
+//    return glm::vec3(distance);
+}
+
+float MainLoop::getLight(glm::vec3 surfacePosition)
+{
+    const glm::vec3 ligthPosition(0.0f, 5.0f, 6.0f);
+    glm::vec3 lightVector = glm::normalize(ligthPosition-surfacePosition);
+//    glm::vec3 normalVector = getNormal(surfacePosition);
+//    float diffuse = glm::dot(normalVector, lightVector);
+    float diffuse = 1.0f;
+    float minDistanceToLight = rayMarch(surfacePosition, lightVector, 0.02f);
+    if(minDistanceToLight<glm::length(ligthPosition-surfacePosition))
+        diffuse = 0.0f;
+    return diffuse;
+}
+
+float MainLoop::getDistance(glm::vec3 currentMarchingLocation)
 {
     glm::vec3 sphere = glm::vec3(0.0f, 1.0f, 6.0f);
     float sphereRadius = 1.0f;
@@ -67,14 +93,12 @@ float getDistance(glm::vec3 currentMarchingLocation)
 
 }
 
-float MainLoop::rayMarch(glm::vec3 rayDirection)
+float MainLoop::rayMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, float minDistanceToSurface)
 {
-    glm::vec3 rayOrigin = camera.getPosition();
     float distanceFromOrigin = 0.0f;
 
     const int maxSteps = 100;
     const float maxDistance = 100.0f;
-    const float minDistanceToSurface = 0.01f;
 
     for(int i = 0; i < maxSteps; i++)
     {
@@ -82,7 +106,7 @@ float MainLoop::rayMarch(glm::vec3 rayDirection)
         float distanceToScene = getDistance(currentMarchingLocation);
         distanceFromOrigin += distanceToScene;
         if(distanceFromOrigin < minDistanceToSurface ||
-           distanceFromOrigin > maxDistance)
+                distanceFromOrigin > maxDistance)
             break;
     }
 
@@ -95,11 +119,18 @@ void MainLoop::render()
     {
         for(int y = 0; y < windowGeometry.y; y++)
         {
-            glm::vec3 world = camera.screenToWorld(glm::ivec2(x, y));
-            glm::ivec2 position(x, y);
-            float distance = rayMarch(world)/20.0f;
+            glm::ivec2 screenPosition(x, y);
+            glm::vec3 rayDirection = camera.screenToWorld(screenPosition);
+            rayDirection = glm::normalize(rayDirection);
+            glm::vec3 rayOrigin = camera.getPosition();
+
+            float distance = rayMarch(rayOrigin, rayDirection)/20.0f;
             distance = distance > 1.0f?1.0f:distance;
-            setPixel(glm::vec3(distance), position);
+            glm::vec3 surfacePosition = camera.getPosition()+rayDirection*distance;
+            float diffuse = getLight(surfacePosition);
+            glm::vec3 normal = getNormal(surfacePosition);
+
+            setPixel(glm::vec3(diffuse), screenPosition);
         }
     }
 
