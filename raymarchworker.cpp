@@ -56,7 +56,7 @@ void RayMarchWorker::threadFunction()
         }
         glm::vec3 rayOrigin = camera.getPosition();
         glm::vec3 rayDirection = camera.screenToWorld(pixelPosition);
-        float distance = rayMarch(rayOrigin, rayDirection)/100.0f;
+        float distance = rayMarch(rayOrigin, rayDirection)/50.0f;
         distance = distance > 1.0f?1.0f:distance;
         glm::vec3 color(distance);
 
