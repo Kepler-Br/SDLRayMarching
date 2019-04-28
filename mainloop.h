@@ -6,19 +6,19 @@
 #include <iostream>
 
 #include "customtime.h"
+#include "raymarcher.h"
+#include "window.h"
 #include "camera.h"
 
 class MainLoop
 {
 private:
-    const glm::ivec2 windowGeometry = {800, 600};
-    SDL_Window *window = nullptr;
-    SDL_Renderer *renderer = nullptr;
-
     bool isRunning = false;
-    const float fpsCap = 1.0f;
+    const float fpsCap = 60.0f;
 
     CustomTime customTime;
+    RayMarcher rayMarcher;
+    Window window;
     Camera camera;
 
     void init();
@@ -27,12 +27,8 @@ private:
     void update();
     void render();
     void delayFps();
-    void setPixel(glm::vec3 color, glm::ivec2 position);
-
-    float rayMarch(glm::vec3 rayDirection);
 public:
     MainLoop();
-    ~MainLoop();
     void run();
 
 };

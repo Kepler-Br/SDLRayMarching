@@ -3,7 +3,7 @@
 
 #include <glm/glm.hpp>
 #include <SDL2/SDL.h>
-#include <iostream>
+#include <string>
 
 class Window
 {
@@ -20,8 +20,9 @@ private:
     void init(const glm::ivec2 &geometry);
 
 public:
-    Window(const glm::ivec2 &geometry, const std::string &windowTitle);
-    Window(const int x, const int y, const std::string &windowTitle);
+    Window(const glm::ivec2 &geometry, const std::string &windowTitle = "SDL2 window");
+    Window(const int x, const int y, const std::string &windowTitle = "SDL2 window");
+    ~Window();
 
     /**
      *  \brief Sets window title.
@@ -77,6 +78,14 @@ public:
      *  \brief Clears the renderer with black color.
      */
     void clear();
+
+    /**
+     *  \brief Updates renderer with new pixels.
+     */
+    void rendererPresent()
+    {
+        SDL_RenderPresent(renderer);
+    }
 };
 
 #endif // WINDOW_H
