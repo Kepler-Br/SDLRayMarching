@@ -42,18 +42,20 @@ void RayMarchWorker::threadFunction()
         glm::ivec2 pixelPosition = jobFunction();
         getJobMutex.unlock();
 
-        // Wait untill new jobs available
-        if(pixelPosition.x == -1)
-        {
-            std::this_thread::sleep_for(std::chrono::microseconds(10));
-            continue;
-        }
         // If new jobs generation is ended.
         if(pixelPosition.x == -2)
         {
             isRunning = false;
             continue;
         }
+
+        // Wait untill new jobs available
+        if(pixelPosition.x == -1)
+        {
+            std::this_thread::sleep_for(std::chrono::microseconds(10));
+            continue;
+        }
+
         glm::vec3 rayOrigin = camera.getPosition();
         glm::vec3 rayDirection = camera.screenToWorld(pixelPosition);
         float distance = rayMarch(rayOrigin, rayDirection)/50.0f;
