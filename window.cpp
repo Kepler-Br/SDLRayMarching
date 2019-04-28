@@ -1,4 +1,5 @@
 #include "window.h"
+#include <iostream>
 
 void Window::init(const glm::ivec2 &geometry)
 {
@@ -27,6 +28,15 @@ Window::Window(const int x, const int y, const std::string &windowTitle)
 {
     init(glm::ivec2(x, y));
     setWindowTitle(windowTitle);
+}
+
+Window::~Window()
+{
+    if(renderer != nullptr)
+        SDL_DestroyRenderer(renderer);
+    if(window != nullptr)
+        SDL_DestroyWindow(window);
+    SDL_Quit();
 }
 
 void Window::setWindowTitle(const std::string &title)
