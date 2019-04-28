@@ -29,6 +29,7 @@ private:
     void delayFps();
 public:
     MainLoop();
+    ~MainLoop();
     void run();
 
 };

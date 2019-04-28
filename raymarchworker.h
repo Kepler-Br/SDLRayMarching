@@ -13,10 +13,11 @@ class RayMarchWorker
 {
     std::function<glm::ivec2()> jobFunction;
     std::mutex &getJobMutex;
+    std::mutex &setPixelMutex;
     Window &window;
     Camera &camera;
 
-    std::thread thread;
+    std::thread *thread = nullptr;
 
     bool isRunning = false;
 
@@ -25,8 +26,9 @@ class RayMarchWorker
     void threadFunction();
 
 public:
-    RayMarchWorker(std::function<glm::ivec2()> jobFunction, std::mutex &getJobMutex, Window &window, Camera &camera):
+    RayMarchWorker(std::function<glm::ivec2()> jobFunction, std::mutex &getJobMutex, std::mutex &setPixelMutex, Window &window, Camera &camera):
         jobFunction(jobFunction),
+        setPixelMutex(setPixelMutex),
         getJobMutex(getJobMutex),
         window(window),
         camera(camera)

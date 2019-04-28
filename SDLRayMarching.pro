@@ -13,7 +13,7 @@ SOURCES += \
     raymarchworker.cpp
 
 
-LIBS += -lSDL2
+LIBS += -lSDL2 -pthread
 
 HEADERS += \
     mainloop.h \
