@@ -28,8 +28,11 @@ public:
         workers.reserve(workerNumber);
         std::function<const glm::ivec2()> jobFunction = std::bind(&RayMarcher::getJob, this);
 
-        RayMarchWorker worker(jobFunction, getJobMutex, window, camera);
-        workers.push_back(worker);
+        for(uint i = 0; i < workerNumber; i++)
+        {
+            RayMarchWorker worker(jobFunction, getJobMutex, setPixelMutex, window, camera);
+            workers.push_back(worker);
+        }
     }
 
     void runWorkers()
@@ -57,7 +60,6 @@ public:
             currentPixelPosition.y++;
         }
 
-        currentPixelPosition.y++;
         if(currentPixelPosition.y == windowGeometry.y)
         {
             isNewJobsAvailable = false;
@@ -73,7 +75,8 @@ public:
     {
         currentPixelPosition = glm::ivec2(0, 0);
         isNewJobsAvailable = true;
-
+        while(isNewJobsAvailable)
+            std::this_thread::sleep_for(std::chrono::microseconds(10));
     }
 };
 

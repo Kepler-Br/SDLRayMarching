@@ -42,30 +42,41 @@ void RayMarchWorker::threadFunction()
         glm::ivec2 pixelPosition = jobFunction();
         getJobMutex.unlock();
 
+        // Wait untill new jobs available
         if(pixelPosition.x == -1)
-            isRunning = true;
+        {
+            std::this_thread::sleep_for(std::chrono::microseconds(10));
+            continue;
+        }
+        // If new jobs generation is ended.
         if(pixelPosition.x == -2)
+        {
             isRunning = false;
-
-
-
+            continue;
+        }
         glm::vec3 rayOrigin = camera.getPosition();
         glm::vec3 rayDirection = camera.screenToWorld(pixelPosition);
-        float distance = rayMarch(rayOrigin, rayDirection);
+        float distance = rayMarch(rayOrigin, rayDirection)/100.0f;
         distance = distance > 1.0f?1.0f:distance;
         glm::vec3 color(distance);
-        window.setPixel(pixelPosition, color);
 
+        setPixelMutex.lock();
+        window.setPixel(pixelPosition, color);
+        setPixelMutex.unlock();
     }
 }
 
 RayMarchWorker::~RayMarchWorker()
 {
-    thread.join();
+    if(thread != nullptr)
+    {
+        thread->join();
+        delete thread;
+    }
 }
 
 void RayMarchWorker::run()
 {
-    thread = std::thread(std::bind(&RayMarchWorker::threadFunction, this));
-    threadFunction();
+    isRunning = true;
+    thread = new std::thread(std::bind(&RayMarchWorker::threadFunction, this));
 }

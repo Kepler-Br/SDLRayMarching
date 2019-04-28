@@ -58,15 +58,21 @@ void MainLoop::delayFps()
 }
 
 MainLoop::MainLoop():
-    rayMarcher(camera, window),
+    rayMarcher(camera, window, 8),
     window(800, 600),
     camera(window.getGeometry())
 {
     init();
 }
 
+MainLoop::~MainLoop()
+{
+    rayMarcher.stopWorkers();
+}
+
 void MainLoop::run()
 {
+    rayMarcher.runWorkers();
     isRunning = true;
 
     while(isRunning)
