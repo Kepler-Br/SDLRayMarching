@@ -1,4 +1,5 @@
 #include "raymarchworker.h"
+#include <iostream>
 
 float RayMarchWorker::getDistance(glm::vec3 currentMarchingLocation)
 {
@@ -34,55 +35,58 @@ float RayMarchWorker::rayMarch(glm::vec3 &rayOrigin, glm::vec3 &rayDirection)
     return distanceFromOrigin;
 }
 
+glm::vec3 RayMarchWorker::screenToWorld(const glm::ivec2 &screenPosition, const glm::ivec2 &renderViewportSize, const glm::mat4 &inverseVP)
+{
+    // NORMALISED DEVICE SPACE
+    float x = 2.0f * screenPosition.x / renderViewportSize.x - 1.0f;
+    float y = 2.0f * screenPosition.y / renderViewportSize.y - 1.0f;
+
+    // HOMOGENEOUS SPACE
+    glm::vec4 screenPos = glm::vec4(x, -y, -1.0f, 1.0f);
+
+    glm::vec4 worldPos = inverseVP * screenPos;
+    return glm::vec3(worldPos);
+}
+
 void RayMarchWorker::threadFunction()
 {
     while (isRunning)
     {
         getJobMutex.lock();
-        const glm::ivec2 job = jobFunction();
+        const RayMarchJob job = getJob();
         getJobMutex.unlock();
 
-
-
         // Wait untill new jobs available
-        if(job.x == -1)
+        if(!job.newJobAvailable)
         {
             workDone = true;
             std::this_thread::sleep_for(std::chrono::microseconds(10));
             continue;
         }
-//         If new jobs generation is ended.
-        if(job.x == -2)
+        // If new jobs generation is ended.
+        if(job.isShuttingDown)
         {
             workDone = true;
             isRunning = false;
             continue;
         }
-        if(job.y > donePixels.size())
-            donePixels.resize((uint)job.y, glm::vec3(1.0f));
         workDone = false;
-        for(int i = 0; i < (int)donePixels.size(); i++)
+        for(uint i = 0; i < job.pixelsToRender; i++)
         {
-            int currentPixel = job.x+i;
-            glm::ivec2 pixelPosition = glm::ivec2(currentPixel%);
-            glm::vec3 rayOrigin = camera.getPosition();
-            glm::vec3 rayDirection = camera.screenToWorld(pixelPosition);
-            float distance = rayMarch(rayOrigin, rayDirection)/100.0f;
+            uint currentPixel = job.pixelNumber+i;
+            const uint pixelX = currentPixel%static_cast<uint>(renderViewportSize.x);
+            const uint pixelY = currentPixel/static_cast<uint>(renderViewportSize.x);
+            glm::ivec2 pixelPosition = glm::ivec2(pixelX, pixelY);
+            glm::vec3 rayOrigin = cameraPosition;
+            glm::vec3 rayDirection = RayMarchWorker::screenToWorld(pixelPosition, renderViewportSize, inverseVP);
+            float distance = RayMarchWorker::rayMarch(rayOrigin, rayDirection)/100.0f;
             distance = distance > 1.0f?1.0f:distance;
-            glm::vec3 color(1.0f);
+            glm::vec3 color(distance);
+//            glm::vec3 color(1.0f);
+            getJobMutex.lock();
+            pixels->operator[](currentPixel) = color;
+            getJobMutex.unlock();
         }
-
-//        const glm::ivec2 &windowGeometry = window.getGeometry();
-        setPixelMutex.lock();
-
-        for(int i = 0; i < (int)donePixels.size(); i++)
-        {
-            int currentPixel = job.x+i;
-            const glm::vec3 &color = donePixels[i];
-
-            pixels[currentPixel] = color;
-        }
-        setPixelMutex.unlock();
     }
 }
 
@@ -99,4 +103,23 @@ void RayMarchWorker::run()
 {
     isRunning = true;
     thread = new std::thread(std::bind(&RayMarchWorker::threadFunction, this));
+}
+
+bool RayMarchWorker::isWorkDone() const
+{
+    return workDone;
+}
+
+void RayMarchWorker::setCameraMatrices(const glm::mat4 &view, const glm::mat4 &projection, const glm::vec3 &position)
+{
+    this->view = view;
+    this->projection = projection;
+    cameraPosition = position;
+    updateMatrices();
+}
+
+void RayMarchWorker::updateMatrices()
+{
+    VP = projection*view;
+    inverseVP = inverse(VP);
 }

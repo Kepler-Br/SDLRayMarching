@@ -5,10 +5,10 @@ Camera::Camera(glm::ivec2 screenGeometry):
 {
     const float fov = 3.14f/4.0f;
     const float aspect = float(screenGeometry.x)/screenGeometry.y;
-    const float near = 1.0f;
+    const float near = 20.0f;
     const float far = 1000.0f;
     projection = glm::perspective(fov, aspect, near, far);
-    position = glm::vec3(0.0f, 0.2f, 0.0f);
+    position = glm::vec3(0.0f, 0.2123f, 0.0f);
 
     view = glm::lookAt(
                 position, // Camera location
@@ -40,4 +40,14 @@ glm::vec3 Camera::screenToWorld(glm::ivec2 screenPosition)
 
     glm::vec4 worldPos = viewProjectionInverse * screenPos;
     return glm::vec3(worldPos);
+}
+
+glm::mat4 Camera::getView()
+{
+    return view;
+}
+
+glm::mat4 Camera::getProjection()
+{
+    return projection;
 }

@@ -41,10 +41,46 @@ void MainLoop::update()
 
 }
 
+//char colorToChar(const glm::vec3 &color)
+//{
+//    const std::vector<char> charSet = {' ', '.', ',', ':', ';', 'i', 't', '*', '@'};
+//    const uint charSetSize = charSet.size();
+//    float intensity = color.x;
+//    for(int i = 0; i < charSetSize; i++)
+//    {
+//        if(intensity < 1.0f/charSetSize*i)
+//            return charSet[i];
+//    }
+//    return charSet.back();
+//}
 
 void MainLoop::render()
 {
     rayMarcher.render();
+    auto pixels = rayMarcher.getPixels();
+    const uint pixelCount = pixels->size();
+    const glm::ivec2 geometry = window.getGeometry();
+    for (uint i = 0; i < pixelCount; i++)
+    {
+        const uint pixelX = i%geometry.x;
+        const uint pixelY = i/geometry.x;
+        const glm::vec3 color = pixels->operator[](i);
+        window.setPixel(glm::ivec2(pixelX, pixelY), color);
+    }
+//    uint prevY = 0;
+//    for (uint i = 0; i < pixelCount; i++)
+//    {
+//        const uint pixelX = i%geometry.x;
+//        const uint pixelY = i/geometry.x;
+//        if(prevY != pixelY)
+//        {
+//            std::cout << "\n";
+//            prevY = pixelY;
+//        }
+//        const glm::vec3 color = pixels->operator[](i);
+//        std::cout << colorToChar(color);
+//    }
+//    std::cout << "\n";
 }
 
 
@@ -59,10 +95,11 @@ void MainLoop::delayFps()
 
 MainLoop::MainLoop():
     window(800, 600),
-    rayMarcher(camera, window, 16),
-    camera(window.getGeometry())
+    camera(window.getGeometry()),
+    rayMarcher(window.getGeometry(), 8)
 {
     init();
+    rayMarcher.setCameraMatrices(camera.getView(), camera.getProjection(), camera.getPosition());
 }
 
 MainLoop::~MainLoop()
@@ -77,13 +114,13 @@ void MainLoop::run()
 
     while(isRunning)
     {
-        std::cout << "kek\n";
+        std::cout << "Fps: " << 1.0f/customTime.deltaTime << std::endl;
         customTime.calcDeltaTime();
         prepareScreen();
         processEvents();
         update();
         render();
         window.rendererPresent();
-//        delayFps();
+        delayFps();
     }
 }
