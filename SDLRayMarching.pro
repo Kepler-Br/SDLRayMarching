@@ -19,6 +19,7 @@ HEADERS += \
     mainloop.h \
     customtime.h \
     camera.h \
+    raymarchjob.h \
     window.h \
     raymarcher.h \
     raymarchworker.h

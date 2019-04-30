@@ -7,33 +7,33 @@
 #include <functional>
 
 #include "raymarchworker.h"
-#include "camera.h"
-#include "window.h"
-#include "array"
+#include "raymarchjob.h"
 
 class RayMarcher
 {
     std::vector<glm::vec3> pixels;
-    Window &window;
+
+    glm::ivec2 renderViewportSize;
     std::vector<RayMarchWorker> workers;
     std::mutex getJobMutex;
-    std::mutex setPixelMutex;
     bool isNewJobsAvailable = false;
     bool isStoppingWorkers = false;
-    glm::ivec2 currentPixelPosition;
 
+    RayMarchJob currentJob;
+
+    bool isAllJobsDone();
 public:
-    RayMarcher(Camera &camera, Window &window, uint workerNumber = 1);
+    RayMarcher(const glm::ivec2 renderViewportSize, const uint workerNumber = 1);
 
+    void setCameraMatrices(const glm::mat4 &view, const glm::mat4 &projection, const glm::vec3 cameraPosition);
     void runWorkers();
-
     void stopWorkers();
 
-    const glm::ivec2 getJob();
+    const RayMarchJob getJob();
+
+    const std::vector<glm::vec3> *getPixels();
 
     void render();
-private:
-    void setColors();
 };
 
 #endif // RAYMARCHER_H

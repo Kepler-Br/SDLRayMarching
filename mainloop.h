@@ -14,12 +14,12 @@ class MainLoop
 {
 private:
     bool isRunning = false;
-    const float fpsCap = 60.0f;
+    const float fpsCap = 1.0f;
 
     CustomTime customTime;
     Window window;
-    RayMarcher rayMarcher;
     Camera camera;
+    RayMarcher rayMarcher;
 
     void init();
     void prepareScreen();

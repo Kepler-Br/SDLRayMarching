@@ -8,7 +8,7 @@
 class Window
 {
 private:
-    glm::ivec2 geometry ;
+    glm::ivec2 geometry;
     SDL_Window *window = nullptr;
     SDL_Renderer *renderer = nullptr;
 
