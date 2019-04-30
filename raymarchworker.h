@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <mutex>
 #include <thread>
+#include <vector>
 
 #include "camera.h"
 #include "window.h"
@@ -14,8 +15,11 @@ class RayMarchWorker
     std::function<glm::ivec2()> jobFunction;
     std::mutex &getJobMutex;
     std::mutex &setPixelMutex;
-    Window &window;
+    std::vector<glm::vec3> &pixels;
     Camera &camera;
+    int totalWorkers;
+    std::vector<glm::vec3> donePixels;
+    bool workDone = true;
 
     std::thread *thread = nullptr;
 
@@ -26,17 +30,25 @@ class RayMarchWorker
     void threadFunction();
 
 public:
-    RayMarchWorker(std::function<glm::ivec2()> jobFunction, std::mutex &getJobMutex, std::mutex &setPixelMutex, Window &window, Camera &camera):
+    RayMarchWorker(std::function<glm::ivec2()> jobFunction, std::mutex &getJobMutex, std::mutex &setPixelMutex, std::vector<glm::vec3> &pixels, Camera &camera, int totalWorkers):
         jobFunction(jobFunction),
-        setPixelMutex(setPixelMutex),
         getJobMutex(getJobMutex),
-        window(window),
-        camera(camera)
-    {}
+        setPixelMutex(setPixelMutex),
+        pixels(pixels),
+        camera(camera),
+        totalWorkers(totalWorkers)
+    {
+
+    }
 
     ~RayMarchWorker();
 
     void run();
+
+    bool isWorkDone()
+    {
+        return workDone;
+    }
 };
 
 #endif // RAYMARCHWORKER_H
