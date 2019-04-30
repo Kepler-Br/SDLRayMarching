@@ -58,8 +58,8 @@ void MainLoop::delayFps()
 }
 
 MainLoop::MainLoop():
-    rayMarcher(camera, window, 8),
     window(800, 600),
+    rayMarcher(camera, window, 16),
     camera(window.getGeometry())
 {
     init();
@@ -84,6 +84,6 @@ void MainLoop::run()
         update();
         render();
         window.rendererPresent();
-        delayFps();
+//        delayFps();
     }
 }
