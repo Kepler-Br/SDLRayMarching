@@ -17,8 +17,8 @@ private:
     const float fpsCap = 60.0f;
 
     CustomTime customTime;
-    RayMarcher rayMarcher;
     Window window;
+    RayMarcher rayMarcher;
     Camera camera;
 
     void init();

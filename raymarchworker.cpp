@@ -39,31 +39,49 @@ void RayMarchWorker::threadFunction()
     while (isRunning)
     {
         getJobMutex.lock();
-        glm::ivec2 pixelPosition = jobFunction();
+        const glm::ivec2 job = jobFunction();
         getJobMutex.unlock();
 
-        // If new jobs generation is ended.
-        if(pixelPosition.x == -2)
-        {
-            isRunning = false;
-            continue;
-        }
+
 
         // Wait untill new jobs available
-        if(pixelPosition.x == -1)
+        if(job.x == -1)
         {
+            workDone = true;
             std::this_thread::sleep_for(std::chrono::microseconds(10));
             continue;
         }
+//         If new jobs generation is ended.
+        if(job.x == -2)
+        {
+            workDone = true;
+            isRunning = false;
+            continue;
+        }
+        if(job.y > donePixels.size())
+            donePixels.resize((uint)job.y, glm::vec3(1.0f));
+        workDone = false;
+        for(int i = 0; i < (int)donePixels.size(); i++)
+        {
+            int currentPixel = job.x+i;
+            glm::ivec2 pixelPosition = glm::ivec2(currentPixel%);
+            glm::vec3 rayOrigin = camera.getPosition();
+            glm::vec3 rayDirection = camera.screenToWorld(pixelPosition);
+            float distance = rayMarch(rayOrigin, rayDirection)/100.0f;
+            distance = distance > 1.0f?1.0f:distance;
+            glm::vec3 color(1.0f);
+        }
 
-        glm::vec3 rayOrigin = camera.getPosition();
-        glm::vec3 rayDirection = camera.screenToWorld(pixelPosition);
-        float distance = rayMarch(rayOrigin, rayDirection)/50.0f;
-        distance = distance > 1.0f?1.0f:distance;
-        glm::vec3 color(distance);
-
+//        const glm::ivec2 &windowGeometry = window.getGeometry();
         setPixelMutex.lock();
-        window.setPixel(pixelPosition, color);
+
+        for(int i = 0; i < (int)donePixels.size(); i++)
+        {
+            int currentPixel = job.x+i;
+            const glm::vec3 &color = donePixels[i];
+
+            pixels[currentPixel] = color;
+        }
         setPixelMutex.unlock();
     }
 }
