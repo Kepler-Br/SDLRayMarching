@@ -18,8 +18,8 @@ float RayMarchWorker::rayMarch(glm::vec3 &rayOrigin, glm::vec3 &rayDirection)
 {
     float distanceFromOrigin = 0.0f;
 
-    const int maxSteps = 100;
-    const float maxDistance = 100.0f;
+    const int maxSteps = 50;
+    const float maxDistance = 10.0f;
     const float minDistanceToSurface = 0.01f;
 
     for(int i = 0; i < maxSteps; i++)
